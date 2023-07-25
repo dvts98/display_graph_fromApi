@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Exchange Rate Chart</title>
+    <style>
+        .active-chart-btn {
+            background-color: green;
+            color: white;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div>
+        <button id="lineBtn" class="chart-btn">Line Chart</button>
+        <button id="barBtn" class="chart-btn">Bar Chart</button>
+    </div>
+    <canvas id="exchangeRateChart" width="400" height="200"></canvas>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var chartType = 'line'; // Default chart type is line
+            var myChart; // Declare the myChart 
+
+            // Fetch data from the API  using Fetch API
+            fetch('https://api.exchangerate.host/timeseries?start_date=2020-01-01&end_date=2020-01-10&symbols=INR')
+                .then(response => response.json())
+                .then(data => {
+                    // Extract the dates and rates from response data
+                    var responseData = data;
+                    var dates = Object.keys(responseData.rates);
+                    var rates = Object.values(responseData.rates).map(function (rate) {
+                        return rate.INR;
+                    });
+
+                    // Find the minimum rate to  y-axis
+                    var minRate = Math.min(...rates);
+
+                    // Create the line chart using Chart.js
+                    var ctx = document.getElementById('exchangeRateChart').getContext('2d');
+                    myChart = new Chart(ctx, {
+                        type: chartType, // Set the initial chart type
+                        data: {
+                            labels: dates,
+                            datasets: [{
+                                label: 'Exchange Rate (INR)',
+                                data: rates,
+                                borderColor: 'rgba(75, 192, 192, 1)',
+                                backgroundColor: 'rgba(75, 192, 192, 0.2)', // Set green background color
+                                borderWidth: 1,
+                                pointRadius: 4, //  point radius for the line graph
+                                fill: true // Set fill to true for the line graph to fill the area under the line
+                            }]
+                        },
+                        options: {
+                            scales: {
+                                x: {
+                                    ticks: {
+                                        maxRotation: 0,
+                                        minRotation: 0,
+                                        autoSkip: true,
+                                        maxTicksLimit: 10
+                                    }
+                                },
+                                y: {
+                                    suggestedMin: minRate, // Set the minimum value for the y-axis
+                                    beginAtZero: false // Set false to avoid the y-axis starting from zero
+                                }
+                            }
+                        }
+                    });
+
+                    // Button event listeners to switch between line and bar charts
+                    document.getElementById('lineBtn').addEventListener('click', function () {
+                        if (chartType !== 'line') {
+                            chartType = 'line';
+                            myChart.destroy(); // Destroy the existing chart
+                            myChart = new Chart(ctx, {
+                                type: chartType,
+                                data: {
+                                    labels: dates,
+                                    datasets: [{
+                                        label: 'Exchange Rate (INR)',
+                                        data: rates,
+                                        borderColor: 'rgba(75, 192, 192, 1)',
+                                        backgroundColor: 'rgba(75, 192, 192, 0.2)', // Set green background color
+                                        borderWidth: 1,
+                                        pointRadius: 4,
+                                        fill: true
+                                    }]
+                                },
+                                options: {
+                                    scales: {
+                                        x: {
+                                            ticks: {
+                                                maxRotation: 0,
+                                                minRotation: 0,
+                                                autoSkip: true,
+                                                maxTicksLimit: 10
+                                            }
+                                        },
+                                        y: {
+                                            suggestedMin: minRate,
+                                            beginAtZero: false
+                                        }
+                                    }
+                                }
+                            });
+                            setActiveChartButton('lineBtn');
+                        }
+                    });
+
+                    document.getElementById('barBtn').addEventListener('click', function () {
+                        if (chartType !== 'bar') {
+                            chartType = 'bar';
+                            myChart.destroy(); // Destroy the existing chart
+                            myChart = new Chart(ctx, {
+                                type: chartType,
+                                data: {
+                                    labels: dates,
+                                    datasets: [{
+                                        label: 'Exchange Rate (INR)',
+                                        data: rates,
+                                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                                        borderColor: 'rgba(75, 192, 192, 1)',
+                                        borderWidth: 1,
+                                        barPercentage: 0.6,
+                                        categoryPercentage: 0.6
+                                    }]
+                                },
+                                options: {
+                                    scales: {
+                                        x: {
+                                            ticks: {
+                                                maxRotation: 0,
+                                                minRotation: 0,
+                                                autoSkip: true,
+                                                maxTicksLimit: 10
+                                            }
+                                        },
+                                        y: {
+                                            suggestedMin: minRate,
+                                            beginAtZero: false
+                                        }
+                                    }
+                                }
+                            });
+                            setActiveChartButton('barBtn');
+                        }
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                });
+
+        // Function to set the active class on the chart buttons
+        function setActiveChartButton(activeButtonId) {
+            var buttons = document.querySelectorAll('.chart-btn');
+            buttons.forEach(function (button) {
+                if (button.id === activeButtonId) {
+                    button.classList.add('active-chart-btn');
+                } else {
+                    button.classList.remove('active-chart-btn');
+                }
+            });
+        }
+    });
+</script>
+</body>
+</html>
