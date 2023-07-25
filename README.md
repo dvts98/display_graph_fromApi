@@ -1,4 +1,4 @@
-# display_graph_fromApi
+
 # Exchange Rate Chart
 
 ![screenshot](https://github.com/dvts98/display_graph_fromApi/issues/1#issue-1820288740))
